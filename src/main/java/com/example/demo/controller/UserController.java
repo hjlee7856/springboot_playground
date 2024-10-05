@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.LoginDto;
 import com.example.demo.dto.UserDto;
+import com.example.demo.dto.UserInfoDto;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,21 @@ public class UserController {
             return new ResponseEntity<>("message: 일치하는 유저가 없습니다.", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(findUser.getName(), HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+        User findUser = userService.getUserByUid(loginDto.getUid());
+        if (findUser == null) {
+            return new ResponseEntity<>("message: 일치하는 아이디가 없습니다.", HttpStatus.FORBIDDEN);
+        }
+        if(!passwordEncoder.matches(loginDto.getPassword(), findUser.getPassword())) {
+            return new ResponseEntity<>("message: 비밀번호가 틀렸습니다.", HttpStatus.FORBIDDEN);
+        } else {
+            UserInfoDto userInfoDto = new UserInfoDto();
+            userInfoDto.setName(findUser.getName());
+            return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+        }
     }
 
     @PostMapping("/delete") // soft하게 삭제함 플래그만 사용 Update
